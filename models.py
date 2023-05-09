@@ -5,7 +5,7 @@ import datetime
 
 class Klines(Base):
     """Database model"""
-    __tablename__ = "ohlcv"
+    __tablename__ = "klines"
 
     symbol = Column(String, primary_key=True, index=True)
     timeframe = Column(String, primary_key=True, index=True)

@@ -22,7 +22,7 @@ async def add_klines(
 
 
 @app.get("/klines/")
-async def read_ohlcv(
+async def read_klines(
         symbol: str,
         timeframe: str,
         start_date: int | None = None,
