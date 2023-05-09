@@ -1,2 +1,3 @@
 # trade_db
-Database for storing trade history
+The service for storing the history of trading data
+The service use FastAPI. You can see docks on http://service:port/docs
