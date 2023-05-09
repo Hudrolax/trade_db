@@ -22,7 +22,7 @@ async def add_klines(
 
 
 @app.get("/klines/")
-async def read_klines(
+async def get_klines(
         symbol: str,
         timeframe: str,
         start_date: int | None = None,
@@ -30,7 +30,7 @@ async def read_klines(
         limit: int | None = None,
         db: Session = Depends(get_db),
 ):
-    result = read_klines(
+    klines = read_klines(
         db=db,
         symbol=symbol,
         timeframe=timeframe,
@@ -38,6 +38,19 @@ async def read_klines(
         end_date=end_date,
         limit=limit,
     )
+    result = []
+    for kline in klines:
+        result.append([
+            kline.open_time,
+            kline.close_time,
+            kline.open,
+            kline.high,
+            kline.low,
+            kline.close,
+            kline.volume,
+            kline.trades,
+        ])
+
     return result
 
 if __name__ == '__main__':

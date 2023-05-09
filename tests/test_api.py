@@ -65,6 +65,6 @@ async def test_get_klines_by_api(test_db):
 
     assert response.status_code == 200
     assert len(response.json()) == 1
-    assert response.json()[0]['trades'] == 888
+    assert response.json()[0][7] == 888
 
     del_mock_klines(test_db)
