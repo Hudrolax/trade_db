@@ -67,4 +67,20 @@ async def test_get_klines_by_api(test_db):
     assert len(response.json()) == 1
     assert response.json()[0][7] == 888
 
+    # get firs BTCUSDT
+    async with httpx.AsyncClient(app=main.app,  base_url="http://test") as client:
+        params = {'symbol': 'BTCUSDT', 'timeframe': '15m', 'limit_first': 1}
+        response = await client.get("/klines/", params=params)
+
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0][7] == 777
+
+    # get 400 error
+    async with httpx.AsyncClient(app=main.app,  base_url="http://test") as client:
+        params = {'symbol': 'BTCUSDT', 'timeframe': '15m', 'limit': 1, 'limit_first': 1}
+        response = await client.get("/klines/", params=params)
+
+    assert response.status_code == 400
+
     del_mock_klines(test_db)

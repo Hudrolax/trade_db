@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 import models
 from db import engine, get_db
@@ -29,7 +29,11 @@ async def get_klines(
         end_date: int | None = None,
         limit: int | None = None,
         db: Session = Depends(get_db),
+        limit_first: int | None = None,
 ):
+    if limit is not None and limit_first is not None:
+        raise HTTPException(status_code=400, detail="limit and limit_first params cannot be sent at the same time")
+
     klines = read_klines(
         db=db,
         symbol=symbol,
@@ -37,6 +41,7 @@ async def get_klines(
         start_date=start_date,
         end_date=end_date,
         limit=limit,
+        limit_first=limit_first,
     )
     result = []
     for kline in klines:

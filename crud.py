@@ -19,6 +19,7 @@ def read_klines(
         start_date: int | None = None,
         end_date: int | None = None,
         limit: int | None = None,
+        limit_first: int | None =  None,
 ) -> list[models.Klines]:
     query = db.query(models.Klines).filter(models.Klines.symbol == symbol,
                                            models.Klines.timeframe == timeframe)
@@ -29,13 +30,19 @@ def read_klines(
     if end_date is not None:
         query = query.filter(models.Klines.open_time < end_date)
 
-    # Order by open_time in descending order
-    query = query.order_by(models.Klines.open_time.desc())
+    # Order by open_time
+    if limit is not None:
+        query = query.order_by(models.Klines.open_time.desc())
+    elif limit_first is not None:
+        query = query.order_by(models.Klines.open_time.asc())
 
     # Apply limit if it's not None
     if limit is not None:
         query = query.limit(limit)
+    elif limit_first is not None:
+        query = query.limit(limit_first)
 
-    ohlcv_data = query.all()
+    records = query.all()
+    sorted_records = sorted(records, key=lambda r: r.open_time)
 
-    return ohlcv_data
+    return sorted_records
