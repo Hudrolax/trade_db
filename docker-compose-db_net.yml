@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+    ports:
+      - "${PORT}:8000"
+    volumes:
+      - ./:/app
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - PORT=${PORT}
+    networks:
+      - db_net_local
+      - db_net
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    networks:
+      - db_net_local
+  
+  adminer:
+    image: adminer
+    ports:
+      - ${DBADMIN_PORT}:8080
+    networks:
+      - db_net_local
+    depends_on:
+      - db
+
+volumes:
+  db-data:
+
+networks:
+  db_net:
+    external: true
+  db_net_local:
