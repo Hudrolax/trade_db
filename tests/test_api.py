@@ -2,6 +2,9 @@ import httpx
 import main
 import pytest
 from test_models import del_mock_klines, test_db, make_mock_klines, add_klines_to_db
+import numpy as np
+import h5py
+import io
 
 
 def make_payload():
@@ -82,5 +85,58 @@ async def test_get_klines_by_api(test_db):
         response = await client.get("/klines/", params=params)
 
     assert response.status_code == 400
+
+    del_mock_klines(test_db)
+
+@pytest.mark.asyncio
+async def test_get_klines_by_ndarray(test_db):
+    """Test getting kline history by h5 ndarray file"""
+    pydantic_klines = make_mock_klines()
+    add_klines_to_db(test_db, pydantic_klines)
+
+    async with httpx.AsyncClient(app=main.app, base_url="http://test") as client:
+        params = {'symbol': 'BTCUSDT', 'timeframe': '15m'}
+        response = await client.get("/klines_h5/", params=params)
+
+        # Проверка статуса ответа
+        assert response.status_code == 200
+
+        # Чтение данных файла из ответа
+        file_data = io.BytesIO(response.content)
+
+        # Загрузка данных в массив numpy
+        with h5py.File(file_data, 'r') as hf:
+            nparray = np.array(hf['nparray'])
+
+        # Проверка, что массив загружен успешно
+        assert nparray is not None
+        assert nparray.shape != (0,)
+
+    del_mock_klines(test_db)
+
+@pytest.mark.asyncio
+async def test_get_symbols(test_db):
+    """Test getting symbols list"""
+    pydantic_klines = make_mock_klines()
+    add_klines_to_db(test_db, pydantic_klines)
+
+    # check all symbols
+    async with httpx.AsyncClient(app=main.app, base_url="http://test") as client:
+        response = await client.get("/symbols/")
+
+        assert response.status_code == 200
+        assert isinstance(response.json(), list)
+        assert response.json()[0] == 'BTCUSDT'
+        assert len(response.json()) == 2
+    
+    #check 15m symbols
+    async with httpx.AsyncClient(app=main.app, base_url="http://test") as client:
+        params = dict(timeframe='15m')
+        response = await client.get("/symbols/", params=params)
+
+        assert response.status_code == 200
+        assert isinstance(response.json(), list)
+        assert response.json()[0] == 'BTCUSDT'
+        assert len(response.json()) == 1
 
     del_mock_klines(test_db)

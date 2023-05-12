@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import distinct
 import models
 
 
@@ -11,6 +12,11 @@ def add_klines_to_db(db: Session, klines: list[models.KlinesModel]) -> list[mode
     db.commit()
     return result
 
+def read_symbols(db: Session, timeframe: str | None):
+    query = db.query(distinct(models.Klines.symbol))
+    if timeframe is not None:
+        query = query.filter(models.Klines.timeframe == timeframe)
+    return [row[0] for row in query.all()]
 
 def read_klines(
         db: Session,

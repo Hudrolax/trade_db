@@ -17,21 +17,31 @@ RUN python -m venv /py && \
   /py/bin/pip install --upgrade pip && \
   apk add --update --no-cache postgresql-client && \
   apk add --update --no-cache --virtual .tmp-build-deps \
-  build-base postgresql-dev musl-dev zlib zlib-dev linux-headers libffi-dev && \
+  gcc \
+  g++ \
+  build-base \
+  postgresql-dev \
+  musl-dev \
+  python3-dev \
+  zlib \
+  zlib-dev \
+  linux-headers \
+  libc-dev \
+  openssl-dev \
+  freetype-dev \
+  libpng-dev \
+  libffi-dev && \
+  apk add --no-cache libstdc++ openblas-dev hdf5-dev && \
   /py/bin/pip install -r requirements.txt && \
   if [ $DEV = "true" ]; \
   then /py/bin/pip install -r requirements-dev.txt ; \
   fi && \
   apk del .tmp-build-deps && \
-  adduser \
-  --disabled-password \
-  --no-create-home \
-  www && \
-  chmod +x /app/run.sh
+  mkdir tmp
+
+RUN ["chmod", "+x", "/app/run.sh"]
 
 ENV PATH="/app:/py/bin:$PATH"
-
-USER www
 
 ENV NAME FastAPI_Klines_Service
 

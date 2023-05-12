@@ -8,7 +8,7 @@ import pytest
 def make_mock_klines() -> list[KlinesModel]:
     kline1 = KlinesModel(**{
         "symbol": "DOGEUSDT",
-        "timeframe": "15m",
+        "timeframe": "1m",
         "open_time": 1589436922959,
         "close_time": 1589436922960,
         "open": 0.001,
