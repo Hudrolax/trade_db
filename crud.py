@@ -13,10 +13,11 @@ def add_klines_to_db(db: Session, klines: list[models.KlinesModel]) -> list[mode
     return result
 
 def read_symbols(db: Session, timeframe: str | None):
+    """Function read and return list of unique symbols in DB"""
     query = db.query(distinct(models.Klines.symbol))
     if timeframe is not None:
         query = query.filter(models.Klines.timeframe == timeframe)
-    return [row[0] for row in query.all()]
+    return sorted([row[0] for row in query.all()])
 
 def read_klines(
         db: Session,

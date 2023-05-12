@@ -10,7 +10,7 @@ class Klines(Base):
     symbol = Column(String, primary_key=True, index=True)
     timeframe = Column(String, primary_key=True, index=True)
     open_time = Column(BigInteger, primary_key=True, index=True)
-    close_time = Column(BigInteger, index=True)
+    close_time = Column(BigInteger)
     open = Column(Float(precision=24))
     high = Column(Float(precision=24))
     low = Column(Float(precision=24))
