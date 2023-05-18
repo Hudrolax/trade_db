@@ -136,7 +136,7 @@ async def test_get_symbols(test_db):
 
         assert response.status_code == 200
         assert isinstance(response.json(), list)
-        assert response.json()[0] == 'BTCUSDT'
         assert len(response.json()) == 1
+        assert response.json()[0] == 'BTCUSDT'
 
     del_mock_klines(test_db)
