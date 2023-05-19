@@ -68,6 +68,7 @@ def add_klines_to_db(klines: list[KlinesModel]) -> int:
         except OSError:
             df = symbol_df
 
+        df = df.sort_values(by='open_time')
         df.to_csv(filename, index=False)
         result += len(df)
 
@@ -100,6 +101,7 @@ def read_klines(
     filename = get_filename(symbol, timeframe)
     try:
         df = pd.read_csv(filename, dtype=col_types)
+        df = df.sort_values(by='open_time')
     except FileNotFoundError:
         return pd.DataFrame([])
 
