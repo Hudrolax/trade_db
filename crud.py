@@ -3,6 +3,18 @@ import pandas as pd
 import os
 
 
+col_types = dict(
+    open_time='int64',
+    close_time='int64',
+    open=object,
+    high=object,
+    low=object,
+    close=object,
+    volume=object,
+    trades='int64',
+)
+
+
 def get_filename(symbol: str, tf: str):
     return f'klines/{symbol}_{tf}.csv'
 
@@ -36,7 +48,7 @@ def add_klines_to_db(klines: list[KlinesModel]) -> int:
     result = 0
     if len(klines) == 0:
         return 0
-    
+
     dir_path = 'klines'
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
@@ -51,22 +63,16 @@ def add_klines_to_db(klines: list[KlinesModel]) -> int:
         symbol_df = add_df[mask].drop(['symbol', 'timeframe'], axis=1)
 
         try:
-            col_types = dict(
-                open=object,
-                high=object,
-                low=object,
-                close=object,
-                volume=object,
-            )
             df = pd.read_csv(filename, dtype=col_types)
             df = pd.concat([df, symbol_df]).drop_duplicates()
         except OSError:
-            df = symbol_df 
+            df = symbol_df
 
         df.to_csv(filename, index=False)
         result += len(df)
 
     return result
+
 
 def read_symbols(timeframe: str | None) -> list[str]:
     """Function read and return list of unique symbols in DB"""
@@ -75,7 +81,8 @@ def read_symbols(timeframe: str | None) -> list[str]:
     except FileNotFoundError:
         return []
     if timeframe:
-        symbols = [file_name.split('_')[0] for file_name in file_list if file_name.split('_')[1].startswith(timeframe)]
+        symbols = [file_name.split('_')[0] for file_name in file_list if file_name.split(
+            '_')[1].startswith(timeframe)]
     else:
         symbols = [file_name.split('_')[0] for file_name in file_list]
     symbols = list(dict.fromkeys(symbols))
@@ -92,7 +99,7 @@ def read_klines(
 ) -> pd.DataFrame:
     filename = get_filename(symbol, timeframe)
     try:
-        df = pd.read_csv(filename)
+        df = pd.read_csv(filename, dtype=col_types)
     except FileNotFoundError:
         return pd.DataFrame([])
 
