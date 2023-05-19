@@ -78,6 +78,7 @@ def read_symbols(timeframe: str | None) -> list[str]:
         symbols = [file_name.split('_')[0] for file_name in file_list if file_name.split('_')[1].startswith(timeframe)]
     else:
         symbols = [file_name.split('_')[0] for file_name in file_list]
+    symbols = list(dict.fromkeys(symbols))
     return sorted(symbols)
 
 
