@@ -6,47 +6,10 @@ services:
       context: .
       args:
         - DEV=true
+
     ports:
       - "${PORT}:8000"
     volumes:
       - ./:/app
     command: >
-      sh -c "python wait_for_db.py &&
-             python main.py"
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-    depends_on:
-      - db
-      - test_db
-
-  db:
-    image: postgres:13-alpine
-    volumes:
-      - dev-db-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-
-  test_db:
-    image: postgres:13-alpine
-    volumes:
-      - test-db-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=test
-      - POSTGRES_USER=test
-      - POSTGRES_PASSWORD=test
-  
-  adminer:
-    image: adminer
-    ports:
-      - ${DBADMIN_PORT}:8080
-    depends_on:
-      - db
-
-volumes:
-  dev-db-data:
-  test-db-data:
+      sh -c "python main.py"

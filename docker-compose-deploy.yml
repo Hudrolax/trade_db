@@ -9,40 +9,9 @@ services:
     volumes:
       - ./:/app
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
       - PORT=${PORT}
-    depends_on:
-      - db
     restart: always
     logging:
       options:
         max-size: "1m"
         max-file: "3"
-
-  db:
-    image: postgres:13-alpine
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-    restart: always
-    logging:
-      options:
-        max-size: "1m"
-        max-file: "1"
-  
-  adminer:
-    image: adminer
-    ports:
-      - ${DBADMIN_PORT}:8080
-    depends_on:
-      - db
-    restart: always
-
-volumes:
-  db-data:
