@@ -174,4 +174,4 @@ def read_depth(symbol:str) -> xr.DataArray:
         return xr.open_dataarray(f'depth/{symbol}.nc')
     except OSError as error:
         logger.error(error)
-        return xr.DataArray([])
+        raise error

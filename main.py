@@ -97,7 +97,15 @@ async def get_symbols(timeframe: str | None = None):
 async def add_depth(
     depth: models.DepthModel,
 ) -> dict[str, str]:
-    save_depth(symbol=depth.symbol, time=depth.time, depth=depth.depth)
+    try:
+        save_depth(symbol=depth.symbol, time=depth.time, depth=depth.depth)
+    except OSError as ex:
+        raise HTTPException(
+            status_code=500, detail=f"{ex}")
+    except Exception as ex:
+        raise HTTPException(
+            status_code=400, detail=f"{ex}")
+
     return {"result": 'success'}
 
 
@@ -105,9 +113,13 @@ async def add_depth(
 async def get_depth(
         symbol: str,
 ):
-    array = read_depth(
-        symbol=symbol
-    )
+    try:
+        array = read_depth(
+            symbol=symbol
+        )
+    except OSError:
+        raise HTTPException(
+            status_code=404, detail=f"Not found data for {symbol}.")
 
     # Создаем временный файл
     tmp_file = NamedTemporaryFile(delete=False, suffix=".nc", dir="/tmp")
