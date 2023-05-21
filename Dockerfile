@@ -25,8 +25,10 @@ RUN python -m venv /py && \
   openssl-dev \
   freetype-dev \
   libpng-dev \
+  netcdf-dev \
+  hdf5-dev \
   libffi-dev && \
-  apk add --no-cache libstdc++ && \
+  apk add --no-cache libstdc++ netcdf hdf5 && \
   /py/bin/pip install -r requirements.txt && \
   if [ $DEV = "true" ]; \
   then /py/bin/pip install -r requirements-dev.txt ; \

@@ -13,3 +13,10 @@ class KlinesModel(BaseModel):
     close: str
     volume: str
     trades: int
+
+
+class DepthModel(BaseModel):
+    """Pydantic model of order book"""
+    symbol: str
+    time: int
+    depth: list

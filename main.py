@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from starlette.responses import StreamingResponse
 from tempfile import NamedTemporaryFile
 import models
-from crud import add_klines_to_db, read_klines, read_symbols
+from crud import add_klines_to_db, read_klines, read_symbols, save_depth, read_depth
 from typing import List
 import numpy as np
 import os
@@ -75,11 +75,12 @@ async def get_file(
 
     # Возвращаем файл в ответ на GET-запрос
     def file_generator():
-        with open(tmp_file.name, "rb") as f:
-            yield from f
-
-        # Удаляем временный файл
-        os.remove(tmp_file.name)
+        try:
+            with open(tmp_file.name, "rb") as f:
+                yield from f
+        finally:
+            # Удаляем временный файл
+            os.remove(tmp_file.name)
 
     response = StreamingResponse(
         file_generator(), media_type='application/octet-stream')
@@ -90,6 +91,44 @@ async def get_file(
 @app.get("/symbols/")
 async def get_symbols(timeframe: str | None = None):
     return read_symbols(timeframe)
+
+
+@app.post("/depth/", status_code=201)
+async def add_depth(
+    depth: models.DepthModel,
+) -> dict[str, str]:
+    save_depth(symbol=depth.symbol, time=depth.time, depth=depth.depth)
+    return {"result": 'success'}
+
+
+@app.get("/depth/")
+async def get_depth(
+        symbol: str,
+):
+    array = read_depth(
+        symbol=symbol
+    )
+
+    # Создаем временный файл
+    tmp_file = NamedTemporaryFile(delete=False, suffix=".nc", dir="/tmp")
+    tmp_file.close()
+
+    # Сохраняем dataarray в файл nc
+    array.to_netcdf(tmp_file.name)
+
+    # Возвращаем файл в ответ на GET-запрос
+    def file_generator():
+        try:
+            with open(tmp_file.name, "rb") as f:
+                yield from f
+        finally:
+            # Удаляем временный файл
+            os.remove(tmp_file.name)
+
+    response = StreamingResponse(
+        file_generator(), media_type='application/octet-stream')
+
+    return response
 
 
 if __name__ == '__main__':

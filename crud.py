@@ -1,6 +1,12 @@
 from models import KlinesModel
 import pandas as pd
+import numpy as np
+import xarray as xr
 import os
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 col_types = dict(
@@ -30,7 +36,8 @@ def delete_directory(directory_path: str = 'klines'):
                 delete_directory(item_path)  # Рекурсивно удаляем директорию
         # Удаляем саму директорию
         os.rmdir(directory_path)
-    except FileNotFoundError:
+    except FileNotFoundError as error:
+        logger.error(error)
         pass
 
 
@@ -69,7 +76,11 @@ def add_klines_to_db(klines: list[KlinesModel]) -> int:
             df = symbol_df
 
         df = df.sort_values(by='open_time')
-        df.to_csv(filename, index=False)
+        try:
+            df.to_csv(filename, index=False)
+        except OSError as error:
+            logger.error(error)
+            raise error
         result += len(df)
 
     return result
@@ -118,3 +129,49 @@ def read_klines(
         df = df.head(limit_first)
 
     return df
+
+def save_depth(symbol: str, time:int, depth:list[list]) -> None:
+    """Save order book to NETCdf file
+
+    Args:
+        symbol (str): trade symbol
+        time (int): timestamp in ms
+        depth (list[list]): depth list (2d array with price and volume)
+    """
+    dir_path = 'depth'
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    path = f'{dir_path}/{symbol}.nc'
+
+    data = np.array(depth)
+    da = xr.DataArray(data[np.newaxis, ...], coords=[[time], np.arange(data.shape[0]), np.arange(data.shape[1])], dims=['time', 'x', 'y'])
+
+    try:
+        with xr.open_dataarray(path).load() as arr:
+            array = arr
+    except OSError:
+        array = None
+
+    if array is not None:
+        da = xr.concat([array, da], dim='time')
+
+    try:
+        da.to_netcdf(path)
+    except OSError as error:
+        logger.error(error)
+        raise error
+
+def read_depth(symbol:str) -> xr.DataArray:
+    """Function read DataArray from disc and return it
+
+    Args:
+        symbol (str): _description_
+
+    Returns:
+        xr.DataArray: _description_
+    """
+    try:
+        return xr.open_dataarray(f'depth/{symbol}.nc')
+    except OSError as error:
+        logger.error(error)
+        return xr.DataArray([])
