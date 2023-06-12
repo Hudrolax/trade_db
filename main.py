@@ -57,7 +57,7 @@ async def get_file(
         limit: int | None = None,
         limit_first: int | None = None,
 ):
-    try
+    try:
         klines = read_klines(
             symbol=symbol,
             timeframe=timeframe,
