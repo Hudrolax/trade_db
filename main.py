@@ -57,14 +57,19 @@ async def get_file(
         limit: int | None = None,
         limit_first: int | None = None,
 ):
-    klines = read_klines(
-        symbol=symbol,
-        timeframe=timeframe,
-        start_date=start_date,
-        end_date=end_date,
-        limit=limit,
-        limit_first=limit_first,
-    )
+    try
+        klines = read_klines(
+            symbol=symbol,
+            timeframe=timeframe,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            limit_first=limit_first,
+        )
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404, detail=f"Klines for {symbol}_{timeframe} not found.")
+
 
     # Создаем временный файл
     tmp_file = NamedTemporaryFile(delete=False, suffix=".csv", dir="/tmp")

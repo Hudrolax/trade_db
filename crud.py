@@ -113,8 +113,8 @@ def read_klines(
     try:
         df = pd.read_csv(filename, dtype=col_types)
         df = df.sort_values(by='open_time')
-    except FileNotFoundError:
-        return pd.DataFrame([])
+    except FileNotFoundError as ex:
+        raise ex
 
     if start_date is not None:
         df = df[df['open_time'] > start_date]
